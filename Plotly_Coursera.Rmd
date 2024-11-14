@@ -1,0 +1,59 @@
+---
+title: "Top Mobile Application Analytics"
+author: "Gito"
+date: "2024-11-14"
+output: html_document
+---
+
+# Top Mobile Application Analytic
+
+This project is part of Coursera - JHU Course Project to create simple plot with plotly library. Im using my personal work data collected from Mobile Telecommunication Company in Middle East. The data explaining The Top Traffic usage by Mobile Operator Subscriber and measure its speed in order to understand Subscriber Experience.
+
+Below are steps to generated the chart :
+
+1.  Load Necessary library to import data and plot 2 –\> i didnt disclose the source code since it contains subscriber data and personal folder
+
+2.  Perform Data Cleaning and Processing to generate data
+
+3.  Ploting
+
+```{r echo= FALSE}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(plotly)
+Youtube_Site <- read.csv("D:/01 3G/25 SAUDI/56 4G TASK/YOUTUBE ANALYSIS/REPORT/BTS_Raw.csv", header = TRUE)
+# filter tput < 3 mbps and traffic > 20 G
+Youtube_filter <- filter(Youtube_Site,DL_Throughput_Mbps < 3 & Total_PS_Traffic_GB > 20)
+Youtube_filter$APP <- as.factor(Youtube_filter$APP)
+# PLOT Low Tput ( Tput < 3 Mbps for Site with High Traffic > 20 GB)
+App_Low_Site <- read.csv("D:/01 3G/25 SAUDI/56 4G TASK/YOUTUBE ANALYSIS/REPORT/App_Low_Tput.csv", header = TRUE)
+PS <- read.csv("D:/01 3G/25 SAUDI/56 4G TASK/YOUTUBE ANALYSIS/REPORT/IMSI2/Playstation.csv", header = TRUE)
+SnapChat <- read.csv("D:/01 3G/25 SAUDI/56 4G TASK/YOUTUBE ANALYSIS/REPORT/IMSI2/SnapChat.csv", header = TRUE)
+TikTok <- read.csv("D:/01 3G/25 SAUDI/56 4G TASK/YOUTUBE ANALYSIS/REPORT/IMSI2/TikTok.csv", header = TRUE)
+Youtube <- read.csv("D:/01 3G/25 SAUDI/56 4G TASK/YOUTUBE ANALYSIS/REPORT/IMSI2/Youtube.csv", header = TRUE)
+FB <- read.csv("D:/01 3G/25 SAUDI/56 4G TASK/YOUTUBE ANALYSIS/REPORT/IMSI2/Facebook.csv", header = TRUE)
+App_Combine <- rbind(SnapChat,TikTok,Youtube,FB,PS)
+```
+
+# Top Mobile Phone App Traffic
+
+```{r echo= FALSE }
+A <- Youtube_Site|> group_by(APP) |> summarise(sum(Total_PS_Traffic_GB)) |>ggplot(aes(x=reorder(APP,`sum(Total_PS_Traffic_GB)`),y=`sum(Total_PS_Traffic_GB)`/1000))+geom_bar(stat = "identity",aes(fill = APP))+theme_classic()+labs(x= "APP",y = "Total Traffic TB", title = "Top APP Traffic" )+coord_flip()
+ggplotly(A)
+```
+
+# Top Mobile Phone App Traffic per Tech
+
+```{r echo= FALSE}
+C <- Youtube_Site|> group_by(APP,Tech) |> summarise(sum(Total_PS_Traffic_GB)) |>ggplot(aes(x=reorder(Tech,`sum(Total_PS_Traffic_GB)`),y=`sum(Total_PS_Traffic_GB)`/1000))+geom_bar(stat = "identity",aes(fill = APP))+theme_classic()+labs(x= "APP",y = "Total Traffic TB", title = "Top APP Traffic" )+facet_wrap(.~APP)+coord_flip()
+
+ggplotly(C)
+```
+
+# Top Mobile Phone App Speed
+
+```{r echo= FALSE}
+D <- Youtube_Site |> filter(Total_PS_Traffic_GB > 20) |> ggplot(aes(x=APP,y=DL_Throughput_Mbps))+stat_boxplot(geom="errorbar")+geom_boxplot(aes(fill = APP),outliers = FALSE)+theme_classic()+coord_flip()
+ggplotly(D)
+```
